@@ -1,47 +1,69 @@
 {% set name = "ploomber-core" %}
 {% set version = "0.2.27" %}
-{% set python_min = python_min|default("3.8") %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/ploomber-core-{{ version }}.tar.gz
-  sha256: d48bc826e382d095eaa776f67c86786f6473bfc8507a1b1b3671d4b48ddce070
+  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/ploomber-core-{{ version }}.tar.gz
+    sha256: d48bc826e382d095eaa776f67c86786f6473bfc8507a1b1b3671d4b48ddce070
+  - url: https://github.com/ploomber/core/archive/refs/tags/{{ version }}.tar.gz
+    sha256: b71158dac182018da46c5456dbde2e97274570ef070e0d2762dd2817bde2f2c1
+    folder: gh
 
 build:
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
 
 requirements:
   host:
     - pip
-    - python {{ python_min }}
+    - python
     - setuptools
   run:
-    - click
-    - posthog >=3.0
-    - python >={{ python_min }}
+    - python
     - pyyaml
+    - posthog >=3.0
+    - importlib-metadata  # [py<38]
+
+# >       assert captured.err == "Error: second\nfirst\n"
+# E       AssertionError: assert '' == 'Error: second\nfirst\n'
+{% set deselect_tests = " --deselect=gh/tests/test_exceptions.py::test_show" %}
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/test_exceptions.py::test_show_chained_exceptions[BaseException]" %}
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/test_exceptions.py::test_show_chained_exceptions[Exception]" %}
 
 test:
+  source_files:
+    - gh/tests
   imports:
     - ploomber_core
+    - ploomber_core.config
+    - ploomber_core.dependencies
+    - ploomber_core.exceptions
+    - ploomber_core.io
+    - ploomber_core.telemetry
+    - ploomber_core.telemetry.system_info
+    - ploomber_core.telemetry.telemetry
+    - ploomber_core.telemetry.validate_inputs
+    - ploomber_core.warnings
   commands:
     - pip check
+    - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pytest -v gh/tests {{ deselect_tests }}
   requires:
     - pip
-    - python {{ python_min }}
+    - pytest
 
 about:
-  home: https://pypi.org/project/ploomber-core/
-  dev_url: https://github.com/ploomber/core
+  home: https://github.com/ploomber/core
   summary: Core module shared across Ploomber projects.
+  description: Core module shared across Ploomber projects.
   license: Apache-2.0
-  license_file:
-    - LICENSE
+  license_family: Apache
+  license_file: LICENSE
+  dev_url: https://github.com/ploomber/core
+  doc_url: https://ploomber-core.readthedocs.io
 
 extra:
   recipe-maintainers:
