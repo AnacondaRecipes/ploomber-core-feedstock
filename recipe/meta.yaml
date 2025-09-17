@@ -47,13 +47,14 @@ test:
     - ploomber_core.telemetry.telemetry
     - ploomber_core.telemetry.validate_inputs
     - ploomber_core.warnings
+  requires:
+    - pip
+    - pytest
+    - pywin32  # [win]
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     - pytest -v gh/tests {{ deselect_tests }}
-  requires:
-    - pip
-    - pytest
 
 about:
   home: https://github.com/ploomber/core
