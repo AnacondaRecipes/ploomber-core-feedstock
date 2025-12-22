@@ -1,8 +1,5 @@
 {% set name = "ploomber-core" %}
 {% set version = "0.2.27" %}
-{% set deselect_tests = " --deselect=gh/tests/test_exceptions.py::test_show" %}
-{% set deselect_tests = 'deselect_tests + " --deselect=gh/tests/test_exceptions.py::test_show_chained_exceptions[BaseException]"' %}
-{% set deselect_tests = 'deselect_tests + " --deselect=gh/tests/test_exceptions.py::test_show_chained_exceptions[Exception]"' %}
 
 package:
   name: {{ name|lower }}
@@ -32,6 +29,10 @@ requirements:
 
 # >       assert captured.err == "Error: second\nfirst\n"
 # E       AssertionError: assert '' == 'Error: second\nfirst\n'
+{% set deselect_tests = " --deselect=gh/tests/test_exceptions.py::test_show" %}
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/test_exceptions.py::test_show_chained_exceptions[BaseException]" %}
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/test_exceptions.py::test_show_chained_exceptions[Exception]" %}
+
 test:
   source_files:
     - gh/tests
